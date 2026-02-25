@@ -20,7 +20,6 @@ The plugin does not execute arbitrary Lua code.
 
 * Static resolution of dot indexing (`a.b.c`)
 * Local variable tracking within the script
-* Safe `require()` resolution (static only)
 * Canonical path reconstruction
 * No use of `loadstring`
 * No runtime execution
