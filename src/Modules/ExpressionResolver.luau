@@ -116,6 +116,12 @@ function ExpressionResolver:ResolveScriptSelection(scriptSource: string, selecte
 		if instance then
 			self.DebugPrint("Resolved as variable:", selectedText)
 			return instance
+		else
+			instance = self:ResolveExpression(selectedText, locals, 0)
+			if instance then
+				self.DebugPrint("Resolved as expression:", selectedText)
+				return instance
+			end
 		end
 	end
 
