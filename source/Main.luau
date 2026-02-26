@@ -7,8 +7,8 @@
           ttttt          ttt     tttt    ttt    ttt  ttt    ttt  tttt   ttt                 
       tttttt             ttt     tt     tt       tt  tt          tttttttttt                 
       tt         tt      ttt     tt     ttt      tt  tt      tt  ttt                        
-      ttttttttttt  tt    tttttt  tt      tttttttttt   ttttttttt   ttttttttt                 
-        ttttttttt  tt      tttt  tt        ttttt tt     ttttt       ttttt                   
+      ttttttttttttttt    tttttt  tt      tttttttttt   ttttttttt   ttttttttt                 
+        ttttttttttttt      tttt  tt        ttttt tt     ttttt       ttttt                   
                 tttt                                                                        
                                                                                                                                                                           
 @author: ig1oo1
@@ -45,12 +45,7 @@ A lightweight Roblox Studio plugin for static object path resolution:
 -- IMPORTS AND PLUGIN SETUP
 --===========================================================================--
 
-local Selection = game:GetService("Selection")
-local ChangeHistoryService = game:GetService("ChangeHistoryService")
 local CoreGui = game:GetService("CoreGui")
-local ScriptEditorService = game:GetService("ScriptEditorService")
-local StudioService = game:GetService("StudioService")
-local RunService = game:GetService("RunService")
 
 local toolbar = plugin:CreateToolbar("igloo's Tools")
 local mainButton = toolbar:CreateButton("trace", "\"trace\" the path of the selected object, string, or variable", "rbxassetid://105078106155206")
@@ -67,7 +62,7 @@ local pathGuiTemplate = UIFolder:WaitForChild("ObjectPathGui")
 if CoreGui:FindFirstChild("TraceSettings") then
 	CoreGui.TraceSettings:Destroy()
 end
-local settingsGui = script.Parent:WaitForChild("TraceSettings")
+local settingsGui = UIFolder:WaitForChild("TraceSettings")
 settingsGui.Parent = CoreGui
 
 --===========================================================================--
@@ -102,12 +97,18 @@ end
 -- MODULE INITIALIZATION
 --===========================================================================--
 
+local pluginSettings = Settings.new(plugin)
+
+local pluginDebug = Debug.new(function()
+	return pluginSettings:Get("Debugging")
+end)
+
 local GlobalContext: Types.GlobalContext = {
-	GetSetting = Settings.Get,
-	SetSetting = Settings.Set,
+	GetSetting = function(...) return pluginSettings:Get(...) end,
+	SetSetting = function(...) return pluginSettings:Set(...) end,
 	
-	DebugPrint = Debug.Print,
-	DebugWarn = Debug.Warn,
+	DebugPrint = function(...) return pluginDebug:Print(...) end,
+	DebugWarn = function(...) return pluginDebug:Warn(...) end,
 }
 
 -- Expression resolver
@@ -117,11 +118,10 @@ local ExpressionResolverContext: Types.ExpressionResolverContext = {
 local resolver = ExpressionResolver.new(merge(ExpressionResolverContext, GlobalContext))
 
 -- Document tracker
-local tracker = DocumentTracker.new(Selection, ScriptEditorService)
+local tracker = DocumentTracker.new()
 
 -- UI controller
 local UIControllerContext: Types.UIControllerContext = {
-	CoreGui = CoreGui,
 	SettingsGui = settingsGui,
 	PathGuiTemplate = pathGuiTemplate
 }
@@ -129,12 +129,6 @@ local ui = UIController.new(merge(UIControllerContext, GlobalContext))
 
 -- Activation controller
 local ActivationControllerContext: Types.ActivationControllerContext = {
-	Selection = Selection,
-	ScriptEditorService = ScriptEditorService,
-	StudioService = StudioService,
-	ChangeHistoryService = ChangeHistoryService,
-	
-	CoreGui = CoreGui,
 	PathGuiTemplate = pathGuiTemplate,
 	
 	ExpressionResolver = resolver,
@@ -158,3 +152,5 @@ plugin.Unloading:Connect(function()
 	tracker:Destroy()
 	ui:Destroy()
 end)
+
+warn("[trace] Plugin Loaded!")
