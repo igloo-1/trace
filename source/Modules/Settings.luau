@@ -1,35 +1,40 @@
 local Settings = {}
+Settings.__index = Settings
 
 Settings.MAX_RESOLVE_DEPTH = 5
-
-Settings.SETTINGS_KEYS = {
-	Mode = "TracePathMode",
-	Types = "TracePathTypes",
-	Debugging = "TracePathDebugging",
-}
 
 Settings.DEFAULTS = {
 	Mode = "Script",
 	Types = {
 		Object = true,
 		Text = true,
-		Variable = false,
+		Variable = true,
 	},
 	Debugging = {
 		Prints = false,
 	}
 }
 
-function Settings.Get(plugin, key)
-	local value = plugin:GetSetting(key)
-	if value == nil then
-		value = plugin:GetSetting(Settings.SETTINGS_KEYS[key])
-		return value == nil and Settings.DEFAULTS[key] or value
-	end
+function Settings.new(plugin)
+	local self = setmetatable({}, Settings)
+	
+	self.Plugin = plugin
+	
+	return self
 end
 
-function Settings.Set(plugin, key, value)
-	plugin:SetSetting(key, value)
+function Settings:Get(key)
+	local value = self.Plugin:GetSetting(key)
+	
+	if value == nil and Settings.DEFAULTS[key] then
+		value = Settings.DEFAULTS[key]
+	end
+	
+	return value
+end
+
+function Settings:Set(key, value)
+	self.Plugin:SetSetting(key, value)
 end
 
 return Settings
