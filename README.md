@@ -3,6 +3,7 @@
   <a href="https://devforum.roblox.com/t/click-me-trace-a-lightweight-roblox-studio-plugin-for-static-object-path-resolution/4436730">Creator Store</a>
 </p>
 
+---
 
 A Roblox Studio plugin that resolves selected Lua expressions into their fully qualified object paths within the DataModel hierarchy.
 
