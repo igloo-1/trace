@@ -27,39 +27,43 @@ function ExpressionResolver:ResolveExpression(expr: string, locals: table, depth
 	if not expr or expr == "" then
 		return nil
 	end
+	
+	local current
+	local remaining = expr
 
 	-- require(...)
 	local inner = expr:match("^require%((.+)%)$")
 	if inner then
 		local moduleInstance = self:ResolveExpression(inner, locals, depth + 1)
-		if moduleInstance and moduleInstance:IsA("ModuleScript") then
-			local ok, result = pcall(require, moduleInstance)
-			if ok then
-				return result
-			end
+		if not moduleInstance then
+			self.DebugWarn(`Failed to resolve require expression: {inner}, attempting to parse root`)
+			remaining = inner
+		else
+			return moduleInstance
 		end
-		return nil
 	end
 
-	-- game:GetService(...)
-	local service = expr:match('^game:GetService%("([^"]+)"%)$')
-	if service then
-		return game:GetService(service)
-	end
+	-- Handle game:GetService(...) as root
+	local serviceName = expr:match('^game:GetService%("([^"]+)"%)')
+	if serviceName then
+		current = game:GetService(serviceName)
+		remaining = expr:sub(#('game:GetService("' .. serviceName .. '")') + 1)
+	else
+		local root = expr:match("^[%w_]+")
+		if not root then
+			return nil
+		end
 
-	local root = expr:match("^[%w_]+")
-	if not root then
-		self.DebugWarn(`Expression "{expr}" has no root`)
-		return nil
-	end
+		current = locals[root] or (root == "game" and game)
+		if not current then
+			self.DebugWarn(`Root "{root}" not found in locals`)
+			return nil
+		end
 
-	local current = locals[root] or (root == "game" and game)
-	if not current then
-		self.DebugWarn(`Root "{root}" not found in locals`)
-		return nil
+		remaining = expr:sub(#root + 1)
 	end
-
-	for segment in expr:gmatch("%.([%w_]+)") do
+	
+	for segment in remaining:gmatch("%.([%w_]+)") do
 		if typeof(current) == "Instance" then
 			current = current:FindFirstChild(segment)
 		else
@@ -71,7 +75,7 @@ function ExpressionResolver:ResolveExpression(expr: string, locals: table, depth
 		end
 	end
 
-	for segment in expr:gmatch('%["([^"]+)"%]') do
+	for segment in remaining:gmatch('%["([^"]+)"%]') do
 		if typeof(current) == "Instance" then
 			current = current:FindFirstChild(segment)
 		else
