@@ -1,5 +1,7 @@
 <img width="3040" height="722" alt="Trace Logo" src="https://github.com/user-attachments/assets/787b34b1-650a-4bca-9afe-55735f22555a" />
-<div align="center">[Creator Store](https://create.roblox.com/store/asset/75547215839154/trace) </div>
+<p align="center">
+  <a href="https://devforum.roblox.com/t/click-me-trace-a-lightweight-roblox-studio-plugin-for-static-object-path-resolution/4436730">Creator Store</a>
+</p>
 
 A Roblox Studio plugin that resolves selected Lua expressions into their fully qualified object paths within the DataModel hierarchy.
 
