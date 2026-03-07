@@ -172,4 +172,4 @@ If an expression cannot be resolved safely, the plugin will return a resolution 
 
 ## License
 
-MIT
+Custom Source-Available (No Redistribution)
